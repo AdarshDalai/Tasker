@@ -1,6 +1,5 @@
 package com.cloudsbay.tasker.ui.screen.tasklist
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cloudsbay.tasker.BuildConfig
@@ -11,6 +10,7 @@ import com.google.ai.client.generativeai.GenerativeModel
 import com.google.ai.client.generativeai.type.content
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -43,9 +43,16 @@ class TaskViewModel : ViewModel() {
     private val userId = FirebaseAuth.getInstance().currentUser?.uid?.toUUID() ?: UUID.randomUUID()
 
 
-    init{
-        Log.d("TaskViewModel", "User ID: $userId")
+    init {
+        // Start a coroutine to periodically update tasks
+        viewModelScope.launch {
+            while (true) {
+                loadTasks() // Or loadMostPrioritizedTask() as needed
+                delay(2 * 60 * 1000) // Delay for 2 minutes
+            }
+        }
     }
+
     private val defaultPrompt = """
         You are a helpful AI assistant that helps prioritize tasks.
         Please select the most urgent task from the following list based on priority and deadline:
